@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "spawnerbeam",
+  "version": "${version}",
+  "name": "SpawnerBeam",
+  "description": "Draws a beacon-like beam above every mob spawner, visible through blocks.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.example.spawnerbeam.SpawnerBeamClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
