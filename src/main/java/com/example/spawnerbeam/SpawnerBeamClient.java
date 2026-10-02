@@ -81,7 +81,7 @@ public class SpawnerBeamClient implements ClientModInitializer {
 
         Vec3d cam = ctx.camera().getPos();
         Matrix4f m = matrices.peek().getPositionMatrix();
-        float top = ctx.world().getTopY();
+        float top = ctx.world().getBottomY() + ctx.world().getHeight();
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -125,4 +125,4 @@ public class SpawnerBeamClient implements ClientModInitializer {
         b.vertex(m, cx, cy, cz).color(RED, GREEN, BLUE, ALPHA);
         b.vertex(m, dx, dy, dz).color(RED, GREEN, BLUE, ALPHA);
     }
-        }
+}
