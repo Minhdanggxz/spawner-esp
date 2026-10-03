@@ -147,4 +147,4 @@ public class SpawnerBeamClient implements ClientModInitializer {
         b.vertex(m, cx, cy, cz).color(RED, GREEN, BLUE, ALPHA);
         b.vertex(m, dx, dy, dz).color(RED, GREEN, BLUE, ALPHA);
     }
-}
+                }
