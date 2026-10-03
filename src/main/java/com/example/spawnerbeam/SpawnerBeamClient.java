@@ -16,6 +16,7 @@ import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -23,7 +24,9 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SpawnerBeamClient implements ClientModInitializer {
     // Beam look (edit these if you want)
@@ -31,8 +34,10 @@ public class SpawnerBeamClient implements ClientModInitializer {
     private static final int RED = 0, GREEN = 255, BLUE = 60, ALPHA = 150; // 0-255 each
 
     private static final int SCAN_INTERVAL_TICKS = 20;     // rescan once per second
+    private static final int MAX_CHAT_PER_SCAN = 5;        // max new spawner messages per scan (avoids spam)
 
     private List<BlockPos> spawners = new ArrayList<>();
+    private final Set<Long> alerted = new HashSet<>();
     private int tickCounter = 0;
 
     @Override
@@ -44,6 +49,7 @@ public class SpawnerBeamClient implements ClientModInitializer {
     private void onTick(MinecraftClient mc) {
         if (mc.world == null || mc.player == null) {
             spawners = new ArrayList<>();
+            alerted.clear();
             tickCounter = 0;
             return;
         }
@@ -70,6 +76,22 @@ public class SpawnerBeamClient implements ClientModInitializer {
             }
         }
         spawners = found;
+
+        // Tell the player about spawners it has not reported yet
+        int sent = 0, skipped = 0;
+        for (BlockPos p : found) {
+            if (!alerted.add(p.asLong())) continue;
+            if (sent < MAX_CHAT_PER_SCAN) {
+                mc.player.sendMessage(Text.literal("[SpawnerBeam] Spawner tai X=" + p.getX()
+                    + " Y=" + p.getY() + " Z=" + p.getZ()), false);
+                sent++;
+            } else {
+                skipped++;
+            }
+        }
+        if (skipped > 0) {
+            mc.player.sendMessage(Text.literal("[SpawnerBeam] ...va " + skipped + " spawner khac"), false);
+        }
     }
 
     private void onRender(WorldRenderContext ctx) {
