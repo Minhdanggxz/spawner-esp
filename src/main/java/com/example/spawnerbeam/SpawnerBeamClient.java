@@ -8,9 +8,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
@@ -33,8 +33,9 @@ public class SpawnerBeamClient implements ClientModInitializer {
     private static final float HALF_WIDTH = 0.2f;          // half of beam thickness, in blocks
     private static final int RED = 0, GREEN = 255, BLUE = 60, ALPHA = 150; // 0-255 each
 
-    private static final int SCAN_INTERVAL_TICKS = 20;     // rescan once per second
+    private static final int SCAN_INTERVAL_TICKS = 60;     // rescan every 3 seconds
     private static final int MAX_CHAT_PER_SCAN = 5;        // max new spawner messages per scan (avoids spam)
+    private static final int MAX_SCAN_RADIUS = 8;          // scan radius in chunks (8 chunks = 128 blocks)
 
     private List<BlockPos> spawners = new ArrayList<>();
     private final Set<Long> alerted = new HashSet<>();
@@ -60,7 +61,7 @@ public class SpawnerBeamClient implements ClientModInitializer {
 
     private void scan(MinecraftClient mc) {
         ClientWorld world = mc.world;
-        int radius = mc.options.getClampedViewDistance();
+        int radius = Math.min(mc.options.getClampedViewDistance(), MAX_SCAN_RADIUS);
         ChunkPos center = mc.player.getChunkPos();
         List<BlockPos> found = new ArrayList<>();
 
@@ -109,7 +110,7 @@ public class SpawnerBeamClient implements ClientModInitializer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableDepthTest(); // this is what lets the beam show through blocks
         RenderSystem.disableCull();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         BufferBuilder buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
@@ -147,4 +148,4 @@ public class SpawnerBeamClient implements ClientModInitializer {
         b.vertex(m, cx, cy, cz).color(RED, GREEN, BLUE, ALPHA);
         b.vertex(m, dx, dy, dz).color(RED, GREEN, BLUE, ALPHA);
     }
-                }
+}
